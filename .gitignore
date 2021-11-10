@@ -1,6 +1,9 @@
-generated/*
+generated/
 .idea/
 .bsp/
 .vscode/
 project/
 target/
+.metals/
+.scalafmt.conf
+.bloop/
