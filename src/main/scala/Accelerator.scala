@@ -53,12 +53,12 @@ class Accelerator extends Module {
         io.writeEnable := true.B
 
         // increment
-        addressReg := addressReg + 1.U(16.W)
         x := x + 1.U(16.W)
         when(x === 20.U(16.W)) {
           x := 0.U(16.W)
           y := y + 1.U(16.W)
         }
+        addressReg := x + y * 20.U(16.W)
       }
 
     }
