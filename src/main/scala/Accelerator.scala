@@ -13,108 +13,122 @@ class Accelerator extends Module {
 
   })
 
-  val idle :: increment :: readIn :: cross :: write :: done :: Nil = Enum(6)
+  val idle :: write :: read :: done :: Nil = Enum(4)
+  var center :: right :: top :: left :: bottom :: end :: Nil = Enum(6)
   val stateReg = RegInit(idle)
+  val crossReg = RegInit(center)
 
-  val addressReg = RegInit(0.U(16.W))
+  // val addressReg = RegInit(400.U(16.W))
   val inReg = RegInit(0.U(32.W))
-  val outReg = RegInit(0.U(32.W))
   val x = RegInit(0.U(16.W))
   val y = RegInit(0.U(16.W))
-  val count = RegInit(0.U(2.W))
 
   io.writeEnable := false.B
   io.address := 0.U(16.W)
-  io.dataWrite := outReg
+  io.dataWrite := 0.U(32.W)
   io.done := false.B
 
   switch(stateReg) {
     is(idle) {
       when(io.start) {
+        // write
+        io.address := 400.U(16.W)
+        io.writeEnable := true.B
         stateReg := write
-        addressReg := 0.U(16.W)
-        x := 0.U(16.W)
-        y := 0.U(16.W)
-        outReg := 0.U(32.W)
+        // increment
+        when(x === 19.U(16.W)) {
+          x := 0.U(16.W)
+          y := y + 1.U(16.W)
+        }.otherwise {
+          x := x + 1.U(16.W)
+        }
       }
     }
 
     is(write) {
-      when(addressReg === 399.U(16.W)) {
-        io.address := addressReg + 400.U(16.W)
+      when(x + y * 20.U(16.W) === 399.U(16.W)) { // at last pixel
+        // write
+        io.address := 799.U(16.W)
         io.writeEnable := true.B
         io.done := true.B
         stateReg := done
-      }.otherwise {
-        stateReg := increment
-
-        // write
-        io.address := addressReg + 400.U(16.W)
-        io.writeEnable := true.B
-
-        // increment
-        x := x + 1.U(16.W)
-        when(x === 20.U(16.W)) {
-          x := 0.U(16.W)
-          y := y + 1.U(16.W)
-        }
-        addressReg := x + y * 20.U(16.W)
-      }
-
-    }
-
-    is(increment) {
-      when(
+      }.elsewhen( // at border
         x === 0.U(16.W) || y === 0.U(16.W) || x === 19.U(16.W) || y === 19.U(
           16.W
         )
       ) {
-        outReg := 0.U(32.W)
+        // write
+        io.address := x + y * 20.U(16.W) + 400.U(16.W)
+        io.writeEnable := true.B
         stateReg := write
+        // increment
+        when(x === 19.U(16.W)) {
+          x := 0.U(16.W)
+          y := y + 1.U(16.W)
+        }.otherwise {
+          x := x + 1.U(16.W)
+        }
       }.otherwise {
-        io.address := addressReg
+        io.address := x + y * 20.U(16.W)
         inReg := io.dataRead
-        stateReg := readIn
+        stateReg := read
+        crossReg := center
       }
+
     }
 
-    is(readIn) {
+    is(read) {
       when(inReg === 255.U(32.W)) {
-        count := 0.U(2.W)
-        io.address := addressReg + 1.U(16.W)
         inReg := io.dataRead
-        stateReg := cross
-      }.otherwise {
-        outReg := 0.U(32.W)
-        stateReg := write
-      }
-    }
+        stateReg := read
+        switch(crossReg) {
+          is(center) {
+            io.address := x + y * 20.U(16.W) + 1.U(16.W)
+            crossReg := right
+          }
 
-    is(cross) {
-      when(inReg =/= 255.U(32.W)) {
-        outReg := 0.U(32.W)
-        stateReg := write
-      }.otherwise {
-        switch(count) {
-          is("b00".U) {
-            io.address := addressReg - 1.U(16.W)
-            inReg := io.dataRead
-            count := count + 1.U(2.W)
+          is(right) {
+            io.address := x + y * 20.U(16.W) - 20.U(16.W)
+            crossReg := top
           }
-          is("b01".U) {
-            io.address := addressReg + 20.U(16.W)
-            inReg := io.dataRead
-            count := count + 1.U(2.W)
+
+          is(top) {
+            io.address := x + y * 20.U(16.W) - 1.U(16.W)
+            crossReg := left
           }
-          is("b10".U) {
-            io.address := addressReg - 20.U(16.W)
-            inReg := io.dataRead
-            count := count + 1.U(2.W)
+
+          is(left) {
+            io.address := x + y * 20.U(16.W) + 20.U(16.W)
+            crossReg := end
           }
-          is("b11".U) {
-            outReg := 255.U(32.W)
+
+          is(end) {
+            // write
+            io.dataWrite := 255.U(32.W)
+            io.address := x + y * 20.U(16.W) + 400.U(16.W)
+            io.writeEnable := true.B
             stateReg := write
+            // increment
+            when(x === 19.U(16.W)) {
+              x := 0.U(16.W)
+              y := y + 1.U(16.W)
+            }.otherwise {
+              x := x + 1.U(16.W)
+            }
           }
+
+        }
+      }.otherwise {
+        // write
+        io.address := x + y * 20.U(16.W) + 400.U(16.W)
+        io.writeEnable := true.B
+        stateReg := write
+        // increment
+        when(x === 19.U(16.W)) {
+          x := 0.U(16.W)
+          y := y + 1.U(16.W)
+        }.otherwise {
+          x := x + 1.U(16.W)
         }
       }
     }
