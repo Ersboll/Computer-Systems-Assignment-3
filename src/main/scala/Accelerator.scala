@@ -14,7 +14,7 @@ class Accelerator extends Module {
   })
 
   val idle :: write :: read :: done :: Nil = Enum(4)
-  var center :: right :: top :: left :: bottom :: end :: Nil = Enum(6)
+  var center :: right :: top :: left :: bottom :: Nil = Enum(5)
   val stateReg = RegInit(idle)
   val crossReg = RegInit(center)
 
@@ -99,10 +99,10 @@ class Accelerator extends Module {
 
           is(left) {
             io.address := x + y * 20.U(16.W) + 20.U(16.W)
-            crossReg := end
+            crossReg := bottom
           }
 
-          is(end) {
+          is(bottom) {
             // write
             io.dataWrite := 255.U(32.W)
             io.address := x + y * 20.U(16.W) + 400.U(16.W)
