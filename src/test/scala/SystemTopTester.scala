@@ -12,10 +12,10 @@ class SystemTopTester(dut: SystemTop) extends PeekPokeTester(dut) {
   System.out.print("\nLoading the data memory with image data... ")
   //Uncomment one of the following line depending on the image you want to load to the data memory
   //var image = Images.blackImage
-  //var image = Images.whiteImage
-  var image = Images.cellsImage
-  //var image = Images.borderCellsImage
-  for( address <- 0 to image.length-1){
+  // var image = Images.whiteImage
+  // var image = Images.cellsImage
+  var image = Images.borderCellsImage
+  for (address <- 0 to image.length - 1) {
     poke(dut.io.testerDataMemEnable, 1)
     poke(dut.io.testerDataMemWriteEnable, 1)
     poke(dut.io.testerDataMemAddress, address)
@@ -32,7 +32,7 @@ class SystemTopTester(dut: SystemTop) extends PeekPokeTester(dut) {
   var running = true
   var maxCycles = 20000
   var cyclesCounter = maxCycles
-  while(running) {
+  while (running) {
     System.out.print("\rRunning cycle: " + (maxCycles - cyclesCounter))
     step(1)
     poke(dut.io.start, 0) //Start bit is 1 only for 1 cycle
@@ -45,7 +45,7 @@ class SystemTopTester(dut: SystemTop) extends PeekPokeTester(dut) {
   //Dump the data memory content
   System.out.print("\nDump the data memory content... ")
   val inputImage = new util.ArrayList[Int]
-  for( i <- 0 to 399){ //Location of the original image
+  for (i <- 0 to 399) { //Location of the original image
     poke(dut.io.testerDataMemEnable, 1)
     poke(dut.io.testerDataMemWriteEnable, 0)
     poke(dut.io.testerDataMemAddress, i)
@@ -55,7 +55,7 @@ class SystemTopTester(dut: SystemTop) extends PeekPokeTester(dut) {
     step(1)
   }
   val outputImage = new util.ArrayList[Int]
-  for( i <- 400 to 799){ //Location of the processed image
+  for (i <- 400 to 799) { //Location of the processed image
     poke(dut.io.testerDataMemEnable, 1)
     poke(dut.io.testerDataMemWriteEnable, 0)
     poke(dut.io.testerDataMemAddress, i)
@@ -80,13 +80,17 @@ object SystemTopTester {
   def main(args: Array[String]): Unit = {
     println("Testing the full system")
     iotesters.Driver.execute(
-      Array("--generate-vcd-output", "on",
-        "--target-dir", "generated",
-        "--top-name", "SystemTop"),
-      () => new SystemTop()) {
-      c => new SystemTopTester(c)
+      Array(
+        "--generate-vcd-output",
+        "on",
+        "--target-dir",
+        "generated",
+        "--top-name",
+        "SystemTop"
+      ),
+      () => new SystemTop()
+    ) { c =>
+      new SystemTopTester(c)
     }
   }
 }
-
-
