@@ -79,26 +79,32 @@ class Accelerator extends Module {
 
     is(read) {
       when(in === 255.U(32.W)) {
-        in := io.dataRead
-        stateReg := read
         switch(crossReg) {
           is(center) {
             io.address := x + y * 20.U(16.W) + 1.U(16.W)
+            in := io.dataRead
+            stateReg := read
             crossReg := right
           }
 
           is(right) {
             io.address := x + y * 20.U(16.W) - 20.U(16.W)
+            in := io.dataRead
+            stateReg := read
             crossReg := top
           }
 
           is(top) {
             io.address := x + y * 20.U(16.W) - 1.U(16.W)
+            in := io.dataRead
+            stateReg := read
             crossReg := left
           }
 
           is(left) {
             io.address := x + y * 20.U(16.W) + 20.U(16.W)
+            in := io.dataRead
+            stateReg := read
             crossReg := bottom
           }
 
