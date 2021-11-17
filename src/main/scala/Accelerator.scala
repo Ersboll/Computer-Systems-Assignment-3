@@ -18,7 +18,6 @@ class Accelerator extends Module {
   val stateReg = RegInit(idle)
   val crossReg = RegInit(center)
 
-  // val addressReg = RegInit(400.U(16.W))
   val in = RegInit(0.U(32.W))
   val x = RegInit(0.U(16.W))
   val y = RegInit(0.U(16.W))
@@ -76,6 +75,7 @@ class Accelerator extends Module {
       when(in === 255.U(32.W)) {
         switch(crossReg) {
           is(center) {
+            // read right pixel to in
             io.address := x + y * 20.U(16.W) + 1.U(16.W)
             in := io.dataRead
             stateReg := read
@@ -83,6 +83,7 @@ class Accelerator extends Module {
           }
 
           is(right) {
+            // read top pixel to in
             io.address := x + y * 20.U(16.W) - 20.U(16.W)
             in := io.dataRead
             stateReg := read
@@ -90,6 +91,7 @@ class Accelerator extends Module {
           }
 
           is(top) {
+            // read left pixel to in
             io.address := x + y * 20.U(16.W) - 1.U(16.W)
             in := io.dataRead
             stateReg := read
@@ -97,6 +99,7 @@ class Accelerator extends Module {
           }
 
           is(left) {
+            // read bottom pixel to in
             io.address := x + y * 20.U(16.W) + 20.U(16.W)
             in := io.dataRead
             stateReg := read
@@ -104,11 +107,10 @@ class Accelerator extends Module {
           }
 
           is(bottom) {
-            // write
+            // write 255
             io.dataWrite := 255.U(32.W)
             io.address := x + y * 20.U(16.W) + 400.U(16.W)
             io.writeEnable := true.B
-            stateReg := write
             // increment
             when(x === 19.U(16.W)) {
               x := 0.U(16.W)
@@ -116,14 +118,14 @@ class Accelerator extends Module {
             }.otherwise {
               x := x + 1.U(16.W)
             }
+            stateReg := write
           }
 
         }
-      }.otherwise {
-        // write
+      }.otherwise { // in =/= 255
+        // write 0 to address
         io.address := x + y * 20.U(16.W) + 400.U(16.W)
         io.writeEnable := true.B
-        stateReg := write
         // increment
         when(x === 19.U(16.W)) {
           x := 0.U(16.W)
@@ -131,6 +133,7 @@ class Accelerator extends Module {
         }.otherwise {
           x := x + 1.U(16.W)
         }
+        stateReg := write
       }
     }
 
