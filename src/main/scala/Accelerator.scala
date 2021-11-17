@@ -36,12 +36,7 @@ class Accelerator extends Module {
         io.writeEnable := true.B
         stateReg := write
         // increment
-        when(x === 19.U(16.W)) {
-          x := 0.U(16.W)
-          y := y + 1.U(16.W)
-        }.otherwise {
-          x := x + 1.U(16.W)
-        }
+        x := 1.U(16.W)
       }
     }
 
