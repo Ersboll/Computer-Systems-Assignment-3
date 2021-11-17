@@ -19,7 +19,7 @@ class Accelerator extends Module {
   val crossReg = RegInit(center)
 
   // val addressReg = RegInit(400.U(16.W))
-  val inReg = RegInit(0.U(32.W))
+  val in = RegInit(0.U(32.W))
   val x = RegInit(0.U(16.W))
   val y = RegInit(0.U(16.W))
 
@@ -70,7 +70,7 @@ class Accelerator extends Module {
         }
       }.otherwise {
         io.address := x + y * 20.U(16.W)
-        inReg := io.dataRead
+        in := io.dataRead
         stateReg := read
         crossReg := center
       }
@@ -78,8 +78,8 @@ class Accelerator extends Module {
     }
 
     is(read) {
-      when(inReg === 255.U(32.W)) {
-        inReg := io.dataRead
+      when(in === 255.U(32.W)) {
+        in := io.dataRead
         stateReg := read
         switch(crossReg) {
           is(center) {
