@@ -61,7 +61,7 @@ class Accelerator extends Module {
           x := x + 1.U(5.W)
         }
       }.otherwise {
-        io.address := x + y * 20.U(5.W)
+        io.address := Cat(0.U(9.W), x + y * 20.U(5.W))
         in := io.dataRead
         stateReg := read
         crossReg := center
