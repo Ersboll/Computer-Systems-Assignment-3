@@ -42,7 +42,9 @@ class Accelerator extends Module {
 
     is(write) {
       when(x === 19.U(5.W) && y === 19.U(5.W)) { // at last pixel
-        io.done := true.B
+        // io.done := true.B
+        io.address := 799.U(16.W)
+        io.writeEnable := true.B
         stateReg := done
       }.elsewhen( // at border
         x === 0.U(5.W) || y === 0.U(5.W) || x === 19.U(5.W) || y === 19.U(
