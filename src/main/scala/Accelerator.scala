@@ -24,7 +24,7 @@ class Accelerator extends Module {
   val y = RegInit(0.U(5.W))
 
   io.writeEnable := false.B
-  io.address := 0.U(10.W)
+  io.address := 0.U(16.W)
   io.dataWrite := 0.U(32.W)
   io.done := false.B
 
