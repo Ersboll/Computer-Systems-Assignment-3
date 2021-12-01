@@ -19,7 +19,7 @@ class Accelerator extends Module {
   val stateReg = RegInit(idle)
   val crossReg = RegInit(center)
 
-  val in = RegInit(0.U(9.W))
+  val in = RegInit(0.U(1.W))
   val x = RegInit(0.U(5.W))
   val y = RegInit(0.U(5.W))
 
@@ -64,7 +64,7 @@ class Accelerator extends Module {
         }
       }.otherwise {
         io.address := Cat(0.U(9.W), x + y * 20.U(5.W))
-        in := io.dataRead
+        in := io.dataRead(0)
         stateReg := read
         crossReg := center
       }
@@ -72,12 +72,12 @@ class Accelerator extends Module {
     }
 
     is(read) {
-      when(in === 255.U(32.W)) {
+      when(in === 1.U(1.W)) {
         switch(crossReg) {
           is(center) {
             // read right pixel to in
             io.address := Cat(0.U(9.W), x + y * 20.U(5.W)) + 1.U(16.W)
-            in := io.dataRead
+            in := io.dataRead(0)
             stateReg := read
             crossReg := right
           }
@@ -85,7 +85,7 @@ class Accelerator extends Module {
           is(right) {
             // read top pixel to in
             io.address := Cat(0.U(9.W), x + y * 20.U(5.W)) - 20.U(16.W)
-            in := io.dataRead
+            in := io.dataRead(0)
             stateReg := read
             crossReg := top
           }
@@ -93,7 +93,7 @@ class Accelerator extends Module {
           is(top) {
             // read left pixel to in
             io.address := Cat(0.U(9.W), x + y * 20.U(5.W)) - 1.U(16.W)
-            in := io.dataRead
+            in := io.dataRead(0)
             stateReg := read
             crossReg := left
           }
@@ -101,7 +101,7 @@ class Accelerator extends Module {
           is(left) {
             // read bottom pixel to in
             io.address := Cat(0.U(9.W), x + y * 20.U(5.W)) + 20.U(16.W)
-            in := io.dataRead
+            in := io.dataRead(0)
             stateReg := read
             crossReg := bottom
           }
@@ -122,7 +122,7 @@ class Accelerator extends Module {
           }
 
         }
-      }.otherwise { // in =/= 255
+      }.otherwise { // in =/= 1
         // write 0 to address
         io.address := Cat(0.U(9.W), x + y * 20.U(5.W)) + 400.U(16.W)
         io.writeEnable := true.B
